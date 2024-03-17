@@ -1,41 +1,55 @@
-import type { MetaFunction } from "@vercel/remix";
+import { Form, useActionData } from '@remix-run/react';
+import {
+  unstable_createMemoryUploadHandler,
+  unstable_parseMultipartFormData,
+} from '@vercel/remix';
+import type { ActionFunctionArgs, MetaFunction } from '@vercel/remix';
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "New Remix App" },
-    { name: "description", content: "Welcome to Remix!" },
+    { title: 'K-Theme' },
+    { name: 'description', content: 'Generate a terminal theme from an image' },
   ];
 };
 
-export default function Index() {
+export async function clientAction({ request }: ActionFunctionArgs) {
+  const uploadHandler = unstable_createMemoryUploadHandler({
+    maxPartSize: 20 * (1 << 20),
+  });
+  const formData = await unstable_parseMultipartFormData(
+    request,
+    uploadHandler,
+  );
+
+  const file = formData.get('image') as File;
+
+  return { imageURL: URL.createObjectURL(file) };
+}
+
+function InputForm() {
   return (
-    <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}>
-      <h1>Welcome to Remix</h1>
-      <ul>
-        <li>
-          <a
-            target="_blank"
-            href="https://remix.run/tutorials/blog"
-            rel="noreferrer"
-          >
-            15m Quickstart Blog Tutorial
-          </a>
-        </li>
-        <li>
-          <a
-            target="_blank"
-            href="https://remix.run/tutorials/jokes"
-            rel="noreferrer"
-          >
-            Deep Dive Jokes App Tutorial
-          </a>
-        </li>
-        <li>
-          <a target="_blank" href="https://remix.run/docs" rel="noreferrer">
-            Remix Docs
-          </a>
-        </li>
-      </ul>
+    <div>
+      <h1>Generate a terminal theme from an image</h1>
+      <Form action="" method="POST" encType="multipart/form-data">
+        <p>Upload an image to generate a terminal theme from it.</p>
+        <label>
+          Image: <input type="file" name="image" />
+        </label>
+        <button type="submit">Generate Theme</button>
+      </Form>
     </div>
   );
+}
+
+function ThemePreview({ imageURL }: { imageURL: string }) {
+  return <img src={imageURL} alt="" />;
+}
+
+export default function Index() {
+  const actionData = useActionData<typeof clientAction>();
+  if (actionData) {
+    return <ThemePreview imageURL={actionData.imageURL} />;
+  } else {
+    return <InputForm />;
+  }
 }
