@@ -4,8 +4,24 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  isRouteErrorResponse,
+  useRouteError,
 } from '@remix-run/react';
 import { Analytics } from '@vercel/analytics/react';
+
+export function ErrorBoundary() {
+  const error = useRouteError();
+  console.error(error);
+  if (isRouteErrorResponse(error)) {
+    return (
+      <h1>
+        {error.status} {error.statusText}
+      </h1>
+    );
+  } else {
+    return <h1>{(error as Error).message}</h1>;
+  }
+}
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
