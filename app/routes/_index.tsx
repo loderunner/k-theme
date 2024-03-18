@@ -1,9 +1,13 @@
-import { Form, useActionData } from '@remix-run/react';
+import { Form } from '@remix-run/react';
 import {
+  unstable_composeUploadHandlers,
   unstable_createMemoryUploadHandler,
   unstable_parseMultipartFormData,
 } from '@vercel/remix';
 import type { ActionFunctionArgs, MetaFunction } from '@vercel/remix';
+import { put } from '@vercel/blob';
+import { redirect, unstable_createFileUploadHandler } from '@remix-run/node';
+import { nanoid } from 'nanoid';
 
 export const meta: MetaFunction = () => {
   return [
@@ -12,21 +16,33 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-export async function clientAction({ request }: ActionFunctionArgs) {
-  const uploadHandler = unstable_createMemoryUploadHandler({
-    maxPartSize: 20 * (1 << 20),
-  });
+export async function action({ request }: ActionFunctionArgs) {
+  const uploadHandler = unstable_composeUploadHandlers(
+    unstable_createFileUploadHandler({
+      maxPartSize: 20000000,
+      filter: ({ contentType }) =>
+        contentType === 'image/jpeg' || contentType === 'image/png',
+    }),
+    unstable_createMemoryUploadHandler(),
+  );
   const formData = await unstable_parseMultipartFormData(
     request,
     uploadHandler,
   );
 
   const file = formData.get('image') as File;
+  const id = nanoid(12);
 
-  return { imageURL: URL.createObjectURL(file) };
+  await put(id, file, {
+    addRandomSuffix: false,
+    access: 'public',
+    contentType: file.type,
+  });
+
+  return redirect(`/${id}`);
 }
 
-function InputForm() {
+export default function Index() {
   return (
     <div>
       <h1>Generate a terminal theme from an image</h1>
@@ -39,17 +55,4 @@ function InputForm() {
       </Form>
     </div>
   );
-}
-
-function ThemePreview({ imageURL }: { imageURL: string }) {
-  return <img src={imageURL} alt="" />;
-}
-
-export default function Index() {
-  const actionData = useActionData<typeof clientAction>();
-  if (actionData) {
-    return <ThemePreview imageURL={actionData.imageURL} />;
-  } else {
-    return <InputForm />;
-  }
 }
