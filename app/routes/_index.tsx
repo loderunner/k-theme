@@ -1,5 +1,5 @@
 import { Form } from '@remix-run/react';
-import { put } from '@vercel/blob';
+import * as blob from '@vercel/blob';
 import type { ActionFunctionArgs, MetaFunction } from '@remix-run/node';
 import {
   redirect,
@@ -8,7 +8,13 @@ import {
   unstable_createMemoryUploadHandler,
   unstable_parseMultipartFormData,
 } from '@remix-run/node';
-import { nanoid } from 'nanoid';
+import { customAlphabet } from 'nanoid';
+import * as fs from 'node:fs/promises';
+
+const nanoid = customAlphabet(
+  '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
+  10,
+);
 
 export const meta: MetaFunction = () => {
   return [
@@ -16,6 +22,33 @@ export const meta: MetaFunction = () => {
     { name: 'description', content: 'Generate a terminal theme from an image' },
   ];
 };
+
+async function put(
+  filename: string,
+  body: string | File,
+  options: blob.PutCommandOptions,
+): Promise<blob.PutBlobResult> {
+  if (process.env.VERCEL_ENV === 'development') {
+    await fs.mkdir('public/files', { recursive: true });
+    if (typeof body === 'string') {
+      await fs.writeFile(`public/files/${filename}`, body);
+    } else {
+      await fs.writeFile(
+        `public/files/${filename}`,
+        Buffer.from(await body.arrayBuffer()),
+      );
+    }
+    return {
+      contentDisposition: '',
+      contentType: '',
+      downloadUrl: `${process.env.BLOB_STORAGE_URL}/${filename}`,
+      url: `${process.env.BLOB_STORAGE_URL}/${filename}`,
+      pathname: filename,
+    };
+  } else {
+    return blob.put(filename, body, options);
+  }
+}
 
 export async function action({ request }: ActionFunctionArgs) {
   const uploadHandler = unstable_composeUploadHandlers(
@@ -32,7 +65,7 @@ export async function action({ request }: ActionFunctionArgs) {
   );
 
   const file = formData.get('image') as File;
-  const id = nanoid(12);
+  const id = nanoid();
   const extension = file.type === 'image.jpeg' ? 'jpg' : 'png';
 
   console.log(`uploading ${file.name} (${file.size}B) as ${id}.${extension}`);

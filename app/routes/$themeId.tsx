@@ -1,13 +1,20 @@
 import { useLoaderData } from '@remix-run/react';
 import type { LoaderFunctionArgs } from '@remix-run/node';
-import { getDownloadUrl } from '@vercel/blob';
 
 export async function loader({ params }: LoaderFunctionArgs) {
-  const imageURL = await getDownloadUrl(params.paletteId ?? '');
-  return { imageURL };
+  let res = await fetch(
+    `${process.env.BLOB_STORAGE_URL}/${params.themeId}.json`,
+  );
+  if (!res.ok) {
+    throw res;
+  }
+
+  const entry = await res.json();
+
+  return { url: entry.url };
 }
 
 export default function PaletteViewer() {
-  const { imageURL } = useLoaderData<typeof loader>();
-  return <img src={imageURL} />;
+  const { url } = useLoaderData<typeof loader>();
+  return <img src={url} alt="" />;
 }
