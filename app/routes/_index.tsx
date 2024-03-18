@@ -1,12 +1,13 @@
 import { Form } from '@remix-run/react';
+import { put } from '@vercel/blob';
+import type { ActionFunctionArgs, MetaFunction } from '@remix-run/node';
 import {
+  redirect,
+  unstable_createFileUploadHandler,
   unstable_composeUploadHandlers,
   unstable_createMemoryUploadHandler,
   unstable_parseMultipartFormData,
-} from '@vercel/remix';
-import type { ActionFunctionArgs, MetaFunction } from '@vercel/remix';
-import { put } from '@vercel/blob';
-import { redirect, unstable_createFileUploadHandler } from '@remix-run/node';
+} from '@remix-run/node';
 import { nanoid } from 'nanoid';
 
 export const meta: MetaFunction = () => {
