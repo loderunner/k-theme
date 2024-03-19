@@ -7,7 +7,7 @@
   "scripts": {
     "build": "remix vite:build",
     "dev:remix": "remix vite:dev",
-    "dev:flask": "FLASK_DEBUG=1 pipenv sync && pipenv run python -m flask --app api/index run -p 5328",
+    "dev:flask": "pipenv run python -m flask --app api/index --debug run -p 5328",
     "dev": "concurrently \"npm run dev:remix\" \"npm run dev:flask\"",
     "typecheck": "tsc"
   },

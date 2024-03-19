@@ -5,6 +5,12 @@ name = "pypi"
 
 [packages]
 Flask = "*"
+requests = "*"
+numpy = "*"
+pillow = "*"
+matplotlib = "*"
+werkzeug = "*"
+python-dotenv = "*"
 
 [requires]
 python_version = "3.9"
