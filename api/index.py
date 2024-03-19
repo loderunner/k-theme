@@ -42,7 +42,7 @@ def get_theme(theme_id):
     img = Image.open(res.raw).resize((256, 256), Image.Resampling.NEAREST)
 
     print("generating theme")
-    theme = generate_theme(img)
+    theme = generate_theme(img, max_iterations=1)
 
     print("theme generated")
     return {
