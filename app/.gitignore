@@ -1,9 +1,6 @@
-node_modules
-
+node_modules/
 /build
 /public/files
 .env
-.vercel
-.cache
-__pycache__
 .env*.local
+.cache
