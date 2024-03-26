@@ -59,7 +59,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const file = formData.get('image') as File;
   const id = nanoid();
-  const extension = file.type === 'image.jpeg' ? 'jpg' : 'png';
+  const extension = file.type === 'image/jpeg' ? 'jpg' : 'png';
 
   console.log(`uploading ${file.name} (${file.size}B) as ${id}.${extension}`);
   const blob = await put(`${id}.${extension}`, file);
