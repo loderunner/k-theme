@@ -10,6 +10,7 @@ numpy = "*"
 werkzeug = "*"
 python-dotenv = "*"
 scikit-image = "*"
+gunicorn = "*"
 
 [requires]
 python_version = "3.11"
