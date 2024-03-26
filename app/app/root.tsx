@@ -7,7 +7,6 @@ import {
   isRouteErrorResponse,
   useRouteError,
 } from '@remix-run/react';
-import { Analytics } from '@vercel/analytics/react';
 
 export function ErrorBoundary() {
   const error = useRouteError();
@@ -36,7 +35,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {children}
         <ScrollRestoration />
         <Scripts />
-        <Analytics />
       </body>
     </html>
   );

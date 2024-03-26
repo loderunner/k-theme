@@ -8,7 +8,6 @@ import {
   unstable_parseMultipartFormData,
 } from '@remix-run/node';
 import { Form } from '@remix-run/react';
-import * as blob from '@vercel/blob';
 import { customAlphabet } from 'nanoid';
 
 import type { ActionFunctionArgs, MetaFunction } from '@remix-run/node';
@@ -25,31 +24,23 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-async function put(
-  filename: string,
-  body: string | File,
-  options: blob.PutCommandOptions,
-): Promise<blob.PutBlobResult> {
-  if (process.env.VERCEL_ENV === 'development') {
-    await fs.mkdir('public/files', { recursive: true });
-    if (typeof body === 'string') {
-      await fs.writeFile(`public/files/${filename}`, body);
-    } else {
-      await fs.writeFile(
-        `public/files/${filename}`,
-        Buffer.from(await body.arrayBuffer()),
-      );
-    }
-    return {
-      contentDisposition: '',
-      contentType: '',
-      downloadUrl: `${process.env.BLOB_STORAGE_URL}/${filename}`,
-      url: `${process.env.BLOB_STORAGE_URL}/${filename}`,
-      pathname: filename,
-    };
+async function put(filename: string, body: string | File) {
+  await fs.mkdir('public/files', { recursive: true });
+  if (typeof body === 'string') {
+    await fs.writeFile(`public/files/${filename}`, body);
   } else {
-    return blob.put(filename, body, options);
+    await fs.writeFile(
+      `public/files/${filename}`,
+      Buffer.from(await body.arrayBuffer()),
+    );
   }
+  return {
+    contentDisposition: '',
+    contentType: '',
+    downloadUrl: `${process.env.BLOB_STORAGE_URL}/${filename}`,
+    url: `${process.env.BLOB_STORAGE_URL}/${filename}`,
+    pathname: filename,
+  };
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -71,21 +62,12 @@ export async function action({ request }: ActionFunctionArgs) {
   const extension = file.type === 'image.jpeg' ? 'jpg' : 'png';
 
   console.log(`uploading ${file.name} (${file.size}B) as ${id}.${extension}`);
-  const blob = await put(`${id}.${extension}`, file, {
-    addRandomSuffix: false,
-    access: 'public',
-    contentType: file.type,
-  });
+  const blob = await put(`${id}.${extension}`, file);
 
   console.log(`finished uploading ${id}.${extension}: ${blob.url}`);
 
   console.log(`uploading JSON entry as ${id}.json`);
-  await put(`${id}.json`, JSON.stringify({ url: blob.url }), {
-    addRandomSuffix: false,
-    access: 'public',
-    contentType: 'application/json',
-    multipart: true,
-  });
+  await put(`${id}.json`, JSON.stringify({ url: blob.url }));
 
   console.log(`finished uploading ${id}.json`);
   console.log(`redirecting to /${id}`);

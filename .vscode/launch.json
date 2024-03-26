@@ -5,9 +5,10 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Launch dev server",
+      "name": "Launch app",
+      "cwd": "${workspaceFolder}/app",
       "request": "launch",
-      "runtimeArgs": ["run", "dev:remix"],
+      "runtimeArgs": ["run", "dev"],
       "runtimeExecutable": "npm",
       "skipFiles": ["<node_internals>/**"],
       "type": "node"
@@ -17,10 +18,11 @@
       "request": "launch",
       "type": "chrome",
       "url": "http://localhost:5173",
-      "webRoot": "${workspaceFolder}"
+      "webRoot": "${workspaceFolder}/app"
     },
     {
       "name": "Launch Flask server",
+      "cwd": "${workspaceFolder}/api",
       "type": "debugpy",
       "request": "launch",
       "module": "flask",

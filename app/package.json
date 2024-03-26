@@ -6,16 +6,12 @@
   "type": "module",
   "scripts": {
     "build": "remix vite:build",
-    "dev:remix": "remix vite:dev",
-    "dev:flask": "pipenv run python -m flask --app api/index --debug run -p 5328",
-    "dev": "concurrently \"npm run dev:remix\" \"npm run dev:flask\"",
+    "dev": "remix vite:dev",
     "typecheck": "tsc"
   },
   "dependencies": {
     "@remix-run/node": "2.8.1",
     "@remix-run/react": "2.8.1",
-    "@vercel/analytics": "1.2.2",
-    "@vercel/blob": "0.22.1",
     "isbot": "5.1.2",
     "nanoid": "5.0.6",
     "react": "18.2.0",
@@ -26,8 +22,6 @@
     "@remix-run/eslint-config": "2.8.1",
     "@types/react": "18.2.67",
     "@types/react-dom": "18.2.22",
-    "@vercel/remix": "2.8.1-patch.2",
-    "concurrently": "8.2.2",
     "eslint": "8.57.0",
     "eslint-config-prettier": "9.1.0",
     "eslint-import-resolver-typescript": "3.6.1",
@@ -37,7 +31,6 @@
     "prettier": "3.2.5",
     "typescript": "5.4.2",
     "typescript-eslint": "7.3.1",
-    "vercel": "33.6.1",
     "vite": "5.1.6",
     "vite-tsconfig-paths": "4.3.2"
   }
