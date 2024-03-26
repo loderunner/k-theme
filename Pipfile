@@ -7,10 +7,13 @@ name = "pypi"
 Flask = "*"
 requests = "*"
 numpy = "*"
-pillow = "*"
-matplotlib = "*"
 werkzeug = "*"
 python-dotenv = "*"
+scikit-image = "*"
 
 [requires]
-python_version = "3.9"
+python_version = "3.11"
+
+[dev-packages]
+black = "*"
+ipython = "*"

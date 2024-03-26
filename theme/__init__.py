@@ -1,5 +1,15 @@
 import numpy as np
-from matplotlib import colors
+import skimage as ski
+
+
+def read_image(path):
+    img = ski.io.imread(path)
+    img = ski.transform.resize(img, (256, 256), anti_aliasing=False)
+    if img.shape[-1] == 1:
+        img = ski.color.gray2rgb(img)
+    elif img.shape[-1] == 4:
+        img = ski.color.rgba2rgb(img)
+    return ski.util.img_as_float(img).reshape((65536, -1))
 
 
 def hsv_to_hsl(hsv):
@@ -17,7 +27,7 @@ def hsv_to_hsl(hsv):
 
 def rgb_to_hsl(rgb):
     """Converts pixels in RGB to HSL"""
-    hsv = colors.rgb_to_hsv(rgb)
+    hsv = ski.color.rgb2hsv(rgb)
     return hsv_to_hsl(hsv)
 
 
@@ -33,7 +43,7 @@ def hsl_to_hsv(hsl):
 def hsl_to_rgb(hsl):
     """Converts pixels in HSL to RGB"""
     hsv = hsl_to_hsv(hsl)
-    return colors.hsv_to_rgb(hsv)
+    return ski.color.hsv2rgb(hsv)
 
 
 def hsl_to_xyz(hsl):
@@ -73,7 +83,7 @@ def rgb_to_css(color):
     return f"rgb({color[0]}, {color[1]}, {color[2]})"
 
 
-# base palette centroids in RGB 0..1
+# base palette centroids in RGB
 base_centroids = np.array(
     [
         [0, 0, 0],
@@ -127,8 +137,7 @@ def compute_means(assigned, px):
 
 def generate_theme(img, max_iterations=10):
     """Generate a theme from an image"""
-    rgb = np.array(img).reshape((img.size[0] * img.size[1], -1))[:, :3] / 255
-    px = rgb_to_xyz(rgb)
+    px = rgb_to_xyz(img)
     theme = init_centroids()
     theme = snap_centroids(theme, px)
     for i in range(max_iterations):

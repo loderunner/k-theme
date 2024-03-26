@@ -1,19 +1,23 @@
 from flask import Flask
 import requests
 import os, sys
-from PIL import Image
-from theme import generate_theme, rgb_to_css
+from theme import generate_theme, rgb_to_css, read_image
 from werkzeug.exceptions import InternalServerError
 from dotenv import load_dotenv
 
+envs = [
+    "",
+    ".local",
+]
+
 if os.environ.get("FLASK_ENV") is not None:
-    for env in [
-        "",
-        ".local",
+    envs = envs + [
         f".{os.environ['FLASK_ENV']}",
         f".{os.environ['FLASK_ENV']}.local",
-    ]:
-        load_dotenv(f".env{env}", override=True)
+    ]
+
+for env in envs:
+    load_dotenv(f".env{env}", override=True)
 
 app = Flask(__name__)
 
@@ -34,12 +38,13 @@ def get_theme(theme_id):
     print("retrieved entry, parsing JSON")
     entry = res.json()
 
-    print(f"retrieving {entry['url']} and reading image")
-    res = requests.get(entry["url"], stream=True)
+    img_url = entry["url"]
+    print(f"retrieving {img_url} and reading image")
+    res = requests.head(img_url)
     if res.ok == False:
         return "image not found", 404
 
-    img = Image.open(res.raw).resize((256, 256), Image.Resampling.NEAREST)
+    img = read_image(img_url)
 
     print("generating theme")
     theme = generate_theme(img, max_iterations=1)
