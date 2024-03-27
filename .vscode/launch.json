@@ -27,7 +27,7 @@
       "request": "launch",
       "module": "flask",
       "env": {
-        "FLASK_APP": "api/index.py",
+        "FLASK_APP": "server",
         "FLASK_DEBUG": "1",
         "FLASK_ENV": "development"
       },
