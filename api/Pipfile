@@ -4,20 +4,22 @@ verify_ssl = true
 name = "pypi"
 
 [scripts]
-dev = "env FLASK_ENV=development python -m flask --app server run --debug -p 5328"
+dev = "uvicorn server:app --reload"
+server = "python -m server"
 
 [packages]
-Flask = "*"
-requests = "*"
-numpy = "*"
-werkzeug = "*"
-python-dotenv = "*"
-scikit-image = "*"
-gunicorn = "*"
+requests = "~=2.31"
+numpy = "~=1.26"
+scikit-image = "~=0.22.0"
+fastapi = "~=0.110.0"
+uvicorn = {extras = ["standard"], version = "~=0.29.0"}
+pydantic = "~=2.6"
+pydantic-settings = "~=2.2"
 
 [requires]
 python_version = "3.11"
 
 [dev-packages]
-black = "*"
-ipython = "*"
+black = "~=24.3"
+ipython = "~=8.22"
+isort = "~=5.13"

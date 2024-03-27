@@ -17,4 +17,4 @@ WORKDIR /api
 COPY --from=build /api /api
 
 EXPOSE 8000
-ENTRYPOINT [".venv/bin/gunicorn", "-b", "0.0.0.0", "server:app"]
+ENTRYPOINT [".venv/bin/python", "-m", "server"]

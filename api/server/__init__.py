@@ -1,34 +1,18 @@
-from flask import Flask
+import os
+from typing import Annotated
+
 import requests
-import os, sys
-from theme import generate_theme, rgb_to_css, read_image
-from werkzeug.exceptions import InternalServerError
-from dotenv import load_dotenv
+from fastapi import FastAPI
+from pydantic import StringConstraints
+from theme import generate_theme, read_image, rgb_to_css
 
-envs = [
-    "",
-    ".local",
-]
-
-if os.environ.get("FLASK_ENV") is not None:
-    envs = envs + [
-        f".{os.environ['FLASK_ENV']}",
-        f".{os.environ['FLASK_ENV']}.local",
-    ]
-
-for env in envs:
-    load_dotenv(f".env{env}", override=True)
-
-app = Flask(__name__)
+app = FastAPI()
 
 
-@app.errorhandler(InternalServerError)
-def handle_error(err):
-    print(err, file=sys.stderr)
-
-
-@app.route("/api/theme/<theme_id>", methods=["GET"])
-def get_theme(theme_id):
+@app.post("/theme/{theme_id}")
+async def get_theme(
+    theme_id: Annotated[str, StringConstraints(pattern="[0-9A-Za-z]")]
+):
     json_url = f"{os.environ['BLOB_STORAGE_URL']}/{theme_id}.json"
     print(f"retrieving {json_url}")
     res = requests.get(json_url)
