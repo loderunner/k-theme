@@ -7,9 +7,9 @@ RUN pip install pipenv
 RUN PIPENV_VENV_IN_PROJECT=true \
       pipenv \
       --python /usr/bin/python3 \
-      install --deploy
+      sync
 
-FROM gcr.io/distroless/python3-debian12:debug
+FROM gcr.io/distroless/python3-debian12
 
 ENV FLASK_ENV=production
 
