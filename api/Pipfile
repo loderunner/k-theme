@@ -3,6 +3,9 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 name = "pypi"
 
+[scripts]
+dev = "env FLASK_ENV=development python -m flask --app server run --debug -p 5328"
+
 [packages]
 Flask = "*"
 requests = "*"
