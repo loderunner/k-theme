@@ -4,8 +4,8 @@ verify_ssl = true
 name = "pypi"
 
 [scripts]
-dev = "uvicorn server:app --reload"
-server = "python -m server"
+dev = "env FASTAPI_ENV=development python -m server"
+run = "python -m server"
 
 [packages]
 requests = "~=2.31"
@@ -15,6 +15,7 @@ fastapi = "~=0.110.0"
 uvicorn = {extras = ["standard"], version = "~=0.29.0"}
 pydantic = "~=2.6"
 pydantic-settings = "~=2.2"
+structlog = "~=24.1"
 
 [requires]
 python_version = "3.11"
@@ -23,3 +24,4 @@ python_version = "3.11"
 black = "~=24.3"
 ipython = "~=8.22"
 isort = "~=5.13"
+rich = "~=13.7"

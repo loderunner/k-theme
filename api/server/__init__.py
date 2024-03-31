@@ -1,39 +1,73 @@
 import os
+from http import HTTPStatus
 from typing import Annotated
+from uuid import uuid4
 
 import requests
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi.exception_handlers import http_exception_handler
 from pydantic import StringConstraints
 from theme import generate_theme, read_image, rgb_to_css
 
-app = FastAPI()
+from .logger import Logger, get_logger
+
+app = FastAPI(dependencies=[])
+
+
+@app.middleware("http")
+async def access_log(req: Request, next_call):
+    log = get_logger(req)
+    log.info(f"request started: {req.method} {req.url.path}")
+    res: Response = await next_call(req)
+    log.info(
+        f"request ended: {req.method} {req.url.path} - {res.status_code} {HTTPStatus(res.status_code).phrase}"
+    )
+    return res
+
+
+@app.middleware("http")
+async def req_id(req: Request, next_call):
+    req.state.id = str(uuid4())
+    return await next_call(req)
+
+
+@app.exception_handler(Exception)
+async def exception_handler(req: Request, err: BaseException):
+    log = get_logger(req)
+    log.error(str(err), exc_info=err)
+    res = await http_exception_handler(req, HTTPException(500))
+    log.error(
+        f"request ended: {req.method} {req.url.path} - {res.status_code} {HTTPStatus(res.status_code).phrase}"
+    )
+    return res
 
 
 @app.post("/theme/{theme_id}")
 async def get_theme(
-    theme_id: Annotated[str, StringConstraints(pattern="[0-9A-Za-z]")]
+    theme_id: Annotated[str, StringConstraints(pattern="[0-9A-Za-z]")],
+    logger: Logger,
 ):
     json_url = f"{os.environ['BLOB_STORAGE_URL']}/{theme_id}.json"
-    print(f"retrieving {json_url}")
+    logger.info(f"retrieving {json_url}")
     res = requests.get(json_url)
     if res.ok == False:
         return "entry not found", 404
 
-    print("retrieved entry, parsing JSON")
+    logger.info("retrieved entry, parsing JSON")
     entry = res.json()
 
     img_url = entry["url"]
-    print(f"retrieving {img_url} and reading image")
+    logger.info(f"retrieving {img_url} and reading image")
     res = requests.head(img_url)
     if res.ok == False:
         return "image not found", 404
 
     img = read_image(img_url)
 
-    print("generating theme")
+    logger.info("generating theme")
     theme = generate_theme(img, max_iterations=1)
 
-    print("theme generated")
+    logger.info("theme generated")
     return {
         "black": rgb_to_css(theme[0]),
         "red": rgb_to_css(theme[1]),

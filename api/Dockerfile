@@ -11,7 +11,7 @@ RUN PIPENV_VENV_IN_PROJECT=true \
 
 FROM gcr.io/distroless/python3-debian12
 
-ENV FLASK_ENV=production
+ENV FASTAPI_ENV=production
 
 WORKDIR /api
 COPY --from=build /api /api

@@ -21,18 +21,14 @@
       "webRoot": "${workspaceFolder}/app"
     },
     {
-      "name": "Launch Flask server",
+      "name": "Launch API",
       "cwd": "${workspaceFolder}/api",
       "type": "debugpy",
       "request": "launch",
-      "module": "flask",
+      "module": "server",
       "env": {
-        "FLASK_APP": "server",
-        "FLASK_DEBUG": "1",
-        "FLASK_ENV": "development"
+        "FASTAPI_ENV": "development"
       },
-      "args": ["run", "--no-debugger", "--no-reload", "-p", "5328"],
-      "jinja": true,
       "autoStartBrowser": false
     }
   ]
