@@ -1,3 +1,4 @@
+import logging
 import os
 
 import uvicorn
@@ -22,14 +23,20 @@ uvicorn.run(
     port=settings.port,
     log_config={
         "version": 1,
+        "formatters": {"structlog": {"()": "server.logger.stdlib_formatter"}},
         "handlers": {
             "null": {
                 "class": "logging.NullHandler",
             },
+            "structlog": {
+                "class": "logging.StreamHandler",
+                "formatter": "structlog",
+            },
         },
         "loggers": {
             "uvicorn": {
-                "handlers": ["null"],
+                "handlers": ["structlog"],
+                "level": settings.log_level.to_logging(),
             },
             "uvicorn.error": {
                 "handlers": ["null"],

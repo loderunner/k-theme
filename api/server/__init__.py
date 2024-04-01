@@ -1,3 +1,4 @@
+import logging
 import os
 from http import HTTPStatus
 from typing import Annotated
@@ -5,18 +6,30 @@ from uuid import uuid4
 
 import requests
 from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi.concurrency import asynccontextmanager
 from fastapi.exception_handlers import http_exception_handler
 from pydantic import StringConstraints
 from theme import generate_theme, read_image, rgb_to_css
 
-from .logger import Logger, get_logger
+from .logger import Logger, get_req_logger
 
-app = FastAPI(dependencies=[])
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    loggers = ["uvicorn", "uvicorn.error", "uvicorn.access"]
+    for l in loggers:
+        logging.getLogger(l).propagate = False
+    yield
+    for l in loggers:
+        logging.getLogger(l).propagate = True
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 @app.middleware("http")
 async def access_log(req: Request, next_call):
-    log = get_logger(req)
+    log = get_req_logger(req)
     log.info(f"request started: {req.method} {req.url.path}")
     res: Response = await next_call(req)
     log.info(
@@ -32,9 +45,9 @@ async def req_id(req: Request, next_call):
 
 
 @app.exception_handler(Exception)
-async def exception_handler(req: Request, err: BaseException):
-    log = get_logger(req)
-    log.error(str(err), exc_info=err)
+async def exception_handler(req: Request, err: Exception):
+    log = get_req_logger(req)
+    log.error(repr(err), exc_info=err)
     res = await http_exception_handler(req, HTTPException(500))
     log.error(
         f"request ended: {req.method} {req.url.path} - {res.status_code} {HTTPStatus(res.status_code).phrase}"
