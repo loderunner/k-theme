@@ -36,6 +36,9 @@ def make_processors():
                 CallsiteParameter.FUNC_NAME,
                 CallsiteParameter.FILENAME,
                 CallsiteParameter.LINENO,
+                CallsiteParameter.MODULE,
+                CallsiteParameter.PROCESS,
+                CallsiteParameter.PROCESS_NAME,
             ]
         ),
         StackInfoRenderer(),
