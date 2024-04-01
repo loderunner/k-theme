@@ -130,10 +130,13 @@ def assign_centroids(centroids, px):
     return assigned
 
 
-def compute_means(assigned, px):
+def compute_means(centroids, assigned, px):
     """For each group assigned to a centroid, compute the mean and return the list of means"""
     return np.array(
-        [px[assigned == k].mean(axis=0) for k in range(len(base_centroids))]
+        [
+            px[assigned == k].mean(axis=0) if k in assigned else centroids[k]
+            for k in range(len(centroids))
+        ]
     )
 
 
@@ -144,7 +147,7 @@ def generate_theme(img, max_iterations=10):
     theme = snap_centroids(theme, px)
     for i in range(max_iterations):
         assigned = assign_centroids(theme, px)
-        means = compute_means(assigned, px)
+        means = compute_means(theme, assigned, px)
         snapped_means = snap_centroids(means, px)
         if np.allclose(theme, snapped_means):
             break
