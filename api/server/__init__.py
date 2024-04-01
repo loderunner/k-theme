@@ -6,7 +6,7 @@ from typing import Annotated
 from uuid import uuid4
 
 import requests
-from fastapi import FastAPI, File, HTTPException, Request, Response
+from fastapi import FastAPI, File, HTTPException, Request, Response, UploadFile
 from fastapi.concurrency import asynccontextmanager
 from fastapi.exception_handlers import http_exception_handler
 from pydantic import StringConstraints
@@ -58,11 +58,10 @@ async def exception_handler(req: Request, err: Exception):
 
 @app.post("/theme")
 async def get_theme(
-    file: Annotated[bytes, File()],
+    file: UploadFile,
     logger: Logger,
 ):
-    with BytesIO(file) as b:
-        img = read_image(b)
+    img = read_image(file.file)
 
     logger.info("generating theme")
     theme = generate_theme(img, max_iterations=1)
