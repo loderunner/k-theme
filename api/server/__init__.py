@@ -1,11 +1,12 @@
 import logging
 import os
 from http import HTTPStatus
+from io import BytesIO
 from typing import Annotated
 from uuid import uuid4
 
 import requests
-from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi import FastAPI, File, HTTPException, Request, Response
 from fastapi.concurrency import asynccontextmanager
 from fastapi.exception_handlers import http_exception_handler
 from pydantic import StringConstraints
@@ -55,27 +56,13 @@ async def exception_handler(req: Request, err: Exception):
     return res
 
 
-@app.post("/theme/{theme_id}")
+@app.post("/theme")
 async def get_theme(
-    theme_id: Annotated[str, StringConstraints(pattern="[0-9A-Za-z]")],
+    file: Annotated[bytes, File()],
     logger: Logger,
 ):
-    json_url = f"{os.environ['BLOB_STORAGE_URL']}/{theme_id}.json"
-    logger.info(f"retrieving {json_url}")
-    res = requests.get(json_url)
-    if res.ok == False:
-        return "entry not found", 404
-
-    logger.info("retrieved entry, parsing JSON")
-    entry = res.json()
-
-    img_url = entry["url"]
-    logger.info(f"retrieving {img_url} and reading image")
-    res = requests.head(img_url)
-    if res.ok == False:
-        return "image not found", 404
-
-    img = read_image(img_url)
+    with BytesIO(file) as b:
+        img = read_image(b)
 
     logger.info("generating theme")
     theme = generate_theme(img, max_iterations=1)

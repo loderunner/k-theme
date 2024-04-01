@@ -1,9 +1,11 @@
+from io import BytesIO
+
 import numpy as np
 import skimage as ski
 
 
-def read_image(path):
-    img = ski.io.imread(path)
+def read_image(path_or_file: str | BytesIO):
+    img = ski.io.imread(path_or_file)
     img = ski.transform.resize(img, (256, 256), anti_aliasing=False)
     if img.shape[-1] == 1:
         img = ski.color.gray2rgb(img)
