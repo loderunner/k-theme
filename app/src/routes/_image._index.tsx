@@ -41,7 +41,7 @@ export default function Index() {
           <input
             type="file"
             name="image"
-            // accept="image/*"
+            accept="image/*"
             onChange={onChange}
           />
         </label>
