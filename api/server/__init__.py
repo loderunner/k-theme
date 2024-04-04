@@ -23,9 +23,9 @@ async def lifespan(app: FastAPI):
     loggers = ["uvicorn", "uvicorn.error", "uvicorn.access"]
     for l in loggers:
         logging.getLogger(l).propagate = False
-    get_logger().info("Application started")
+    get_logger().info("application started")
     yield
-    get_logger().info("Application stopped")
+    get_logger().info("application stopped")
     for l in loggers:
         logging.getLogger(l).propagate = True
 

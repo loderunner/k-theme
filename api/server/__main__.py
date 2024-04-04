@@ -24,6 +24,7 @@ uvicorn.run(
             "structlog": {
                 "class": "logging.StreamHandler",
                 "formatter": "structlog",
+                "stream": "ext://sys.stdout",
             },
         },
         "loggers": {
