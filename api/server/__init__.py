@@ -58,6 +58,7 @@ async def exception_handler(req: Request, err: Exception):
 
 @app.post("/theme")
 async def get_theme(
+    req: Request,
     file: UploadFile,
     logger: Logger,
 ):

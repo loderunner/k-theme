@@ -1,5 +1,5 @@
 {
-  "include": ["./app/**/*.ts", "./app/**/*.tsx"],
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
   "compilerOptions": {
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "types": ["node", "vite/client"],
@@ -16,7 +16,7 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
-      "~/*": ["./app/*"]
+      "~/*": ["src/*"]
     },
 
     // Vite takes care of building everything, not tsc.

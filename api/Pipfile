@@ -5,7 +5,7 @@ name = "pypi"
 
 [scripts]
 dev = "env FASTAPI_ENV=development python -m server"
-run = "python -m server"
+server = "python -m server"
 
 [packages]
 requests = "~=2.31"
