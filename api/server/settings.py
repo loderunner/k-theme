@@ -1,6 +1,6 @@
 import logging
 from enum import Enum
-from typing import Annotated
+from typing import Annotated, Optional
 
 from annotated_types import Ge, Lt
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -35,3 +35,19 @@ class Settings(BaseSettings):
     debug: bool = False
 
     model_config = SettingsConfigDict(env_file=".env")
+
+
+settings = Settings()
+
+
+def load_settings(env: Optional[str] = None) -> Settings:
+    if env is not None:
+        env_file = f".env.{env}"
+    else:
+        env_file = ".env"
+    settings = Settings(_env_file=env_file)
+    return settings
+
+
+def get_settings():
+    return settings

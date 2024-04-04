@@ -5,16 +5,9 @@ import uvicorn
 import uvicorn.config
 
 from .logger import configure_logger
-from .settings import Settings
+from .settings import load_settings
 
-env = os.environ.get("FASTAPI_ENV")
-if env == "development" or env == "production":
-    env_file = f".env.{env}"
-else:
-    env_file = ".env"
-
-settings = Settings(_env_file=env_file)
-configure_logger(settings)
+settings = load_settings(os.environ.get("FASTAPI_ENV"))
 
 uvicorn.run(
     "server:app",

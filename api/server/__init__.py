@@ -12,15 +12,20 @@ from fastapi.exception_handlers import http_exception_handler
 from pydantic import StringConstraints
 from theme import generate_theme, read_image, rgb_to_css
 
-from .logger import Logger, get_req_logger
+from .logger import Logger, configure_logger, get_logger, get_req_logger
+from .settings import load_settings
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    settings = load_settings(os.environ.get("FASTAPI_ENV"))
+    configure_logger(settings)
     loggers = ["uvicorn", "uvicorn.error", "uvicorn.access"]
     for l in loggers:
         logging.getLogger(l).propagate = False
+    get_logger().info("Application started")
     yield
+    get_logger().info("Application stopped")
     for l in loggers:
         logging.getLogger(l).propagate = True
 
@@ -48,7 +53,6 @@ async def req_id(req: Request, next_call):
 @app.exception_handler(Exception)
 async def exception_handler(req: Request, err: Exception):
     log = get_req_logger(req)
-    log.error(repr(err), exc_info=err)
     res = await http_exception_handler(req, HTTPException(500))
     log.error(
         f"request ended: {req.method} {req.url.path} - {res.status_code} {HTTPStatus(res.status_code).phrase}"
@@ -58,10 +62,12 @@ async def exception_handler(req: Request, err: Exception):
 
 @app.post("/theme")
 async def get_theme(
-    req: Request,
     file: UploadFile,
     logger: Logger,
 ):
+    logger.info(
+        "reading image file", file=file.filename, file_type=file.content_type
+    )
     img = read_image(file.file)
 
     logger.info("generating theme")

@@ -21,10 +21,8 @@ from structlog.stdlib import ProcessorFormatter
 from .settings import Settings
 
 
-def filter_private_ctx(_, __, event_dict: dict[str, Any]):
-    for k in list(event_dict.keys()):
-        if k.startswith("_"):
-            event_dict.pop(k)
+def debug(_, __, event_dict: dict[str, Any]):
+    return event_dict
 
 
 def make_processors():
@@ -46,23 +44,23 @@ def make_processors():
         TimeStamper("iso"),
     ]
     if sys.stdout.isatty():
-        processors += [ConsoleRenderer()]
+        processors += [debug, ConsoleRenderer()]
     else:
         processors += [
             dict_tracebacks,
             EventRenamer("message"),
+            debug,
             JSONRenderer(),
         ]
     return processors
 
 
 def configure_logger(settings: Settings):
-    structlog.configure(
+    structlog.configure_once(
         processors=make_processors(),
         wrapper_class=structlog.make_filtering_bound_logger(
             settings.log_level.to_logging()
         ),
-        cache_logger_on_first_use=True,
     )
 
 
@@ -75,8 +73,6 @@ def get_logger():
 
 
 def get_req_logger(req: Request):
-    if req is None:
-        return structlog.get_logger()
     logger: structlog.stdlib.BoundLogger = structlog.get_logger(
         path=req.url.path,
         method=req.method,
@@ -89,4 +85,4 @@ def get_req_logger(req: Request):
     return logger
 
 
-Logger = Annotated[structlog.stdlib.BoundLogger, Depends(get_logger)]
+Logger = Annotated[structlog.stdlib.BoundLogger, Depends(get_req_logger)]
