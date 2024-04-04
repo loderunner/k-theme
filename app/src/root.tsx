@@ -8,6 +8,8 @@ import {
   useRouteError,
 } from '@remix-run/react';
 
+import './root.css';
+
 export function ErrorBoundary() {
   const error = useRouteError();
   console.error(error);
