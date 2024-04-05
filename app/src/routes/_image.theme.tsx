@@ -6,6 +6,8 @@ import {
 } from '@remix-run/node';
 import { json, useActionData } from '@remix-run/react';
 
+import Palette from '~/components/Palette';
+
 import type { ActionFunctionArgs } from '@remix-run/node';
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -40,7 +42,5 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export default function Theme() {
   const actionData = useActionData<typeof action>();
-  return actionData ? (
-    <pre>{JSON.stringify(actionData.theme, undefined, '  ')}</pre>
-  ) : null;
+  return actionData ? <Palette theme={actionData.theme} /> : null;
 }
