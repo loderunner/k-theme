@@ -6,11 +6,39 @@ import {
 } from '@remix-run/node';
 import { json, useActionData } from '@remix-run/react';
 
+import terminalOutput from '~/assets/terminal-output';
 import Palette from '~/components/Palette';
+import Term from '~/components/Term';
 
 import type { ActionFunctionArgs } from '@remix-run/node';
+import type { Theme } from '~/components/Term';
 
-export async function action({ request }: ActionFunctionArgs) {
+type APITheme = {
+  black: string;
+  red: string;
+  green: string;
+  yellow: string;
+  blue: string;
+  magenta: string;
+  cyan: string;
+  white: string;
+  brightBlack: string;
+  brightRed: string;
+  brightGreen: string;
+  brightYellow: string;
+  brightBlue: string;
+  brightMagenta: string;
+  brightCyan: string;
+  brightWhite: string;
+};
+
+type ActionData = {
+  theme: APITheme;
+};
+
+export async function action({
+  request,
+}: ActionFunctionArgs): Promise<ActionData> {
   const uploadHandler = unstable_composeUploadHandlers(
     unstable_createFileUploadHandler({
       maxPartSize: 25000000,
@@ -40,7 +68,29 @@ export async function action({ request }: ActionFunctionArgs) {
   return { theme: await res.json() };
 }
 
+function apiToTerm(
+  theme: APITheme,
+  lightOrDark: 'light' | 'dark' = 'light',
+): Theme {
+  return {
+    ...theme,
+    background: lightOrDark === 'light' ? theme.white : theme.black,
+    foreground: lightOrDark === 'light' ? theme.black : theme.white,
+    lightFontWeight: 'lighter',
+    normalFontWeight: 'normal',
+    boldFontWeight: 'bold',
+  };
+}
+
 export default function Theme() {
   const actionData = useActionData<typeof action>();
-  return actionData ? <Palette theme={actionData.theme} /> : null;
+  return actionData ? (
+    <>
+      <Palette theme={actionData.theme} />
+      <Term
+        content={terminalOutput}
+        theme={apiToTerm(actionData.theme, 'dark')}
+      />
+    </>
+  ) : null;
 }
