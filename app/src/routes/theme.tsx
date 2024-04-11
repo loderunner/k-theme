@@ -4,13 +4,13 @@ import {
   unstable_createMemoryUploadHandler,
   unstable_parseMultipartFormData,
 } from '@remix-run/node';
-import { json, useActionData } from '@remix-run/react';
+import { json, redirect, useActionData } from '@remix-run/react';
 
 import terminalOutput from '~/assets/terminal-output';
 import Palette from '~/components/Palette';
 import Term from '~/components/Term';
 
-import type { ActionFunctionArgs } from '@remix-run/node';
+import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import type { Theme } from '~/components/Term';
 
 type APITheme = {
@@ -39,6 +39,7 @@ type ActionData = {
 export async function action({
   request,
 }: ActionFunctionArgs): Promise<ActionData> {
+  console.log(`${request.method} ${request.url}`);
   const uploadHandler = unstable_composeUploadHandlers(
     unstable_createFileUploadHandler({
       maxPartSize: 25000000,
@@ -88,6 +89,7 @@ export default function Theme() {
     <>
       <Palette theme={actionData.theme} />
       <Term
+        className="text-sm"
         content={terminalOutput}
         theme={apiToTerm(actionData.theme, 'dark')}
       />

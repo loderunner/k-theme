@@ -8,7 +8,7 @@
       "name": "Launch app",
       "cwd": "${workspaceFolder}/app",
       "request": "launch",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeArgs": ["run", "dev", "--", "--host=0.0.0.0"],
       "runtimeExecutable": "npm",
       "skipFiles": ["<node_internals>/**"],
       "type": "node"
