@@ -21,10 +21,11 @@ function PhotoIcon({ className }: { className?: string }) {
 }
 
 type Props = {
+  name: string;
   onChange?: ChangeEventHandler<HTMLInputElement>;
 };
 
-export default function ImageDrop({ onChange }: Props) {
+export default function ImageDrop({ onChange, name }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const onClick = useCallback<MouseEventHandler<HTMLButtonElement>>(
     () => inputRef.current?.click(),
@@ -77,7 +78,7 @@ export default function ImageDrop({ onChange }: Props) {
         ref={inputRef}
         type="file"
         hidden
-        name="image"
+        name={name}
         accept="image/*"
         onChange={onChangeInput}
       />
