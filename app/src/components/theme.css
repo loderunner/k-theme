@@ -1,0 +1,20 @@
+@property --theme-scheme-button-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: auto;
+}
+
+@property --theme-scheme-button-hover-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: auto;
+}
+
+button.scheme-button {
+  color: var(--theme-scheme-button-color);
+}
+
+button.scheme-button:hover {
+  color: var(--theme-scheme-button-hover-color);
+  background-color: var(--theme-scheme-button-color);
+}

@@ -92,7 +92,7 @@ export default function Index() {
       >
         <ImageDrop name="image" />
       </Form>
-      <Theme theme={theme} scheme="dark" />
+      <Theme theme={theme} />
     </div>
   );
 }

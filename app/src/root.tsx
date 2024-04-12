@@ -34,7 +34,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body className="bg-gray-50">
-        <main className="container mx-auto my-12 flex max-w-screen-md flex-col bg-gray-100 px-8 py-8">
+        <main className="container mx-auto my-12 flex flex-col bg-gray-100 px-8 py-8 md:max-w-screen-md">
           <h1 className="py-8 text-center text-4xl">
             Terminal Theme Generator
           </h1>

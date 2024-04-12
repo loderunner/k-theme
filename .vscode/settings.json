@@ -7,8 +7,5 @@
   },
   "isort.args": ["--profile", "black"],
   "python.analysis.typeCheckingMode": "basic",
-  "files.associations": {
-    "*.css": "postcss"
-  },
   "eslint.workingDirectories": ["./app"]
 }
