@@ -1,7 +1,11 @@
 import clsx from 'clsx';
 import { useCallback, useRef, useState } from 'react';
 
-import type { ChangeEventHandler, MouseEventHandler } from 'react';
+import type {
+  ChangeEventHandler,
+  DragEventHandler,
+  MouseEventHandler,
+} from 'react';
 
 function PhotoIcon({ className }: { className?: string }) {
   return (
@@ -22,10 +26,9 @@ function PhotoIcon({ className }: { className?: string }) {
 
 type Props = {
   name: string;
-  onChange?: ChangeEventHandler<HTMLInputElement>;
 };
 
-export default function ImageDrop({ onChange, name }: Props) {
+export default function ImageDrop({ name }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const onClick = useCallback<MouseEventHandler<HTMLButtonElement>>(
     () => inputRef.current?.click(),
@@ -39,30 +42,70 @@ export default function ImageDrop({ onChange, name }: Props) {
       if (files && files.length > 0) {
         setImageURL(URL.createObjectURL(files[0]));
       }
-      if (onChange) {
-        onChange(e);
-      }
     },
-    [onChange],
+    [],
   );
+
+  const [dragging, setDragging] = useState(false);
+  const onDragEnter = useCallback<DragEventHandler<HTMLDivElement>>((e) => {
+    e.preventDefault();
+    setDragging(true);
+  }, []);
+  const onDragOver = useCallback<DragEventHandler<HTMLDivElement>>(
+    (e) => e.preventDefault(),
+    [],
+  );
+  const onDragEnd = useCallback<DragEventHandler<HTMLDivElement>>((e) => {
+    e.preventDefault();
+    setDragging(false);
+  }, []);
+  const onDrop = useCallback<DragEventHandler<HTMLDivElement>>((e) => {
+    e.preventDefault();
+    setDragging(false);
+
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+      setImageURL(URL.createObjectURL(file));
+      if (inputRef.current) {
+        inputRef.current.files = e.dataTransfer.files;
+        inputRef.current.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    }
+  }, []);
 
   return (
     <button
       className={clsx(
+        'relative',
         'flex',
         'aspect-video',
         'w-full',
         'flex-col',
         'items-center',
         'justify-center',
-        imageURL || 'rounded-xl',
-        imageURL || 'border-4',
-        imageURL || 'border-dashed',
-        imageURL || 'p-8',
       )}
       type="button"
       onClick={onClick}
     >
+      <div
+        className={clsx(
+          'absolute',
+          'z-10',
+          'w-full',
+          'h-full',
+          'box-border',
+          imageURL || 'rounded-xl',
+          imageURL || 'border-4',
+          imageURL || 'border-dashed',
+          dragging ? 'bg-gray-500' : 'bg-transparent',
+          dragging && 'opacity-25',
+        )}
+        onDragEnter={onDragEnter}
+        onDragOver={onDragOver}
+        onDragLeave={onDragEnd}
+        onDragEnd={onDragEnd}
+        onDrop={onDrop}
+      />
       {imageURL ? (
         // eslint-disable-next-line jsx-a11y/img-redundant-alt
         <img src={imageURL} alt="uploaded image" />

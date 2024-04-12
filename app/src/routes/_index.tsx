@@ -5,12 +5,13 @@ import {
   unstable_parseMultipartFormData,
 } from '@remix-run/node';
 import { Form, json, useActionData, useSubmit } from '@remix-run/react';
-import { useMemo } from 'react';
+import { useCallback } from 'react';
 
 import ImageDrop from '~/components/ImageDrop';
 import Theme from '~/components/Theme';
 
 import type { ActionFunctionArgs, MetaFunction } from '@remix-run/node';
+import type { FormEventHandler } from 'react';
 import type { APITheme } from '~/components/Theme';
 
 export const meta: MetaFunction = () => {
@@ -57,42 +58,21 @@ export async function action({
   return { theme: await res.json() };
 }
 
-const defaultTheme: APITheme = {
-  black: 'rgb(8, 8, 8)',
-  blue: 'rgb(78, 112, 135)',
-  brightBlack: 'rgb(49, 54, 65)',
-  brightBlue: 'rgb(59, 118, 235)',
-  brightCyan: 'rgb(67, 130, 247)',
-  brightGreen: 'rgb(162, 183, 141)',
-  brightMagenta: 'rgb(149, 167, 194)',
-  brightRed: 'rgb(172, 70, 71)',
-  brightWhite: 'rgb(243, 243, 246)',
-  brightYellow: 'rgb(243, 203, 70)',
-  cyan: 'rgb(29, 73, 115)',
-  green: 'rgb(169, 153, 118)',
-  magenta: 'rgb(102, 128, 168)',
-  red: 'rgb(164, 96, 103)',
-  white: 'rgb(136, 141, 152)',
-  yellow: 'rgb(217, 193, 141)',
-};
-
 export default function Index() {
   const actionData = useActionData<typeof action>();
-  const theme = useMemo(
-    () => actionData?.theme ?? defaultTheme,
-    [actionData?.theme],
-  );
+
   const submit = useSubmit();
+  const onChange = useCallback<FormEventHandler<HTMLFormElement>>(
+    (e) => submit(e.currentTarget),
+    [submit],
+  );
+
   return (
     <div>
-      <Form
-        method="POST"
-        encType="multipart/form-data"
-        onChange={(e) => submit(e.currentTarget)}
-      >
+      <Form method="POST" encType="multipart/form-data" onChange={onChange}>
         <ImageDrop name="image" />
       </Form>
-      <Theme theme={theme} />
+      {actionData ? <Theme theme={actionData.theme} /> : null}
     </div>
   );
 }
