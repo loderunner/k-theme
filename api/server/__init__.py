@@ -70,10 +70,21 @@ async def get_theme(
     )
     img = read_image(file.file)
 
-    logger.info("generating theme")
-    theme = generate_theme(img, max_iterations=1)
+    logger.info("generating light theme")
+    light_theme = generate_theme(img, "light", max_iterations=1)
+    logger.info("light theme generated")
 
-    logger.info("theme generated")
+    logger.info("generating dark theme")
+    dark_theme = generate_theme(img, "dark", max_iterations=1)
+    logger.info("dark theme generated")
+
+    return {
+        "light": theme_to_css(light_theme),
+        "dark": theme_to_css(dark_theme),
+    }
+
+
+def theme_to_css(theme):
     return {
         "black": rgb_to_css(theme[0]),
         "red": rgb_to_css(theme[1]),

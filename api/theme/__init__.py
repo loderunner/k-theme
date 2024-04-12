@@ -1,5 +1,3 @@
-from io import BytesIO
-
 import numpy as np
 import skimage as ski
 
@@ -85,32 +83,49 @@ def rgb_to_css(color):
     return f"rgb({color[0]}, {color[1]}, {color[2]})"
 
 
-# base palette centroids in RGB
-base_centroids = np.array(
+# base light palette centroids in HSL
+light_centroids = np.array(
     [
-        [0, 0, 0],
-        [0.5, 0, 0],
-        [0, 0.5, 0],
-        [0.5, 0.5, 0],
-        [0, 0, 0.5],
-        [0.5, 0, 0.5],
-        [0, 0.5, 0.5],
-        [0.5, 0.5, 0.5],
-        [0.33, 0.33, 0.33],
-        [1.0, 0, 0],
-        [0, 1.0, 0],
-        [1.0, 1.0, 0],
-        [0, 0, 1.0],
-        [1.0, 0, 1.0],
-        [0, 1.0, 1.0],
-        [1.0, 1.0, 1.0],
+        [0.0, 0.0, 0.0],  # black
+        [0.0, 1.0, 1.0 / 3.0],  # red
+        [2.0 / 6.0, 1.0, 1.0 / 3.0],  # green
+        [1.0 / 6.0, 1.0, 1.0 / 3.0],  # yellow
+        [4.0 / 6.0, 1.0, 1.0 / 3.0],  # blue
+        [5.0 / 6.0, 1.0, 1.0 / 3.0],  # magenta
+        [3.0 / 6.0, 1.0, 1.0 / 3.0],  # cyan
+        [0.0, 0.0, 0.5],  # white
+        [0.0, 0.0, 1.0 / 3.0],  # brightBlack
+        [0.0, 1.0, 0.5],  # brightRed
+        [2.0 / 6.0, 1.0, 0.5],  # brightGreen
+        [1.0 / 6.0, 1.0, 0.5],  # brightYellow
+        [4.0 / 6.0, 1.0, 0.5],  # brightBlue
+        [5.0 / 6.0, 1.0, 0.5],  # brightMagenta
+        [3.0 / 6.0, 1.0, 0.5],  # brightCyan
+        [0.0, 0.0, 1.0],  # brightWhite
     ]
 )
 
-
-def init_centroids():
-    """Returns a copy of base centroids in HSL-XYZ"""
-    return rgb_to_xyz(base_centroids)
+# base dark palette centroids in HSL
+dark_centroids = np.array(
+    [
+        [0.0, 0.0, 0.0],  # black
+        [0.0, 1.0, 0.75],  # red
+        [2.0 / 6.0, 1.0, 0.75],  # green
+        [1.0 / 6.0, 1.0, 0.75],  # yellow
+        [4.0 / 6.0, 1.0, 0.75],  # blue
+        [5.0 / 6.0, 1.0, 0.75],  # magenta
+        [3.0 / 6.0, 1.0, 0.75],  # cyan
+        [0.0, 0.0, 0.5],  # white
+        [0.0, 0.0, 0.33],  # brightBlack
+        [0.0, 1.0, 0.5],  # brightRed
+        [2.0 / 6.0, 1.0, 0.5],  # brightGreen
+        [1.0 / 6.0, 1.0, 0.5],  # brightYellow
+        [4.0 / 6.0, 1.0, 0.5],  # brightBlue
+        [5.0 / 6.0, 1.0, 0.5],  # brightMagenta
+        [3.0 / 6.0, 1.0, 0.5],  # brightCyan
+        [0.0, 0.0, 1.0],  # brightWhite
+    ]
+)
 
 
 def snap_centroids(centroids, px):
@@ -140,10 +155,10 @@ def compute_means(centroids, assigned, px):
     )
 
 
-def generate_theme(img, max_iterations=10):
+def generate_theme(img, scheme, max_iterations=10):
     """Generate a theme from an image"""
     px = rgb_to_xyz(img)
-    theme = init_centroids()
+    theme = hsl_to_xyz(light_centroids if scheme == "light" else dark_centroids)
     theme = snap_centroids(theme, px)
     for i in range(max_iterations):
         assigned = assign_centroids(theme, px)
