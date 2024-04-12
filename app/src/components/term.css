@@ -1,0 +1,16 @@
+@property --term-selected-text {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: auto;
+}
+
+@property --term-selection {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: auto;
+}
+
+span.term-span::selection {
+  color: var(--term-selected-text);
+  background-color: var(--term-selection);
+}

@@ -1,9 +1,13 @@
 import type { Property } from 'csstype';
 import type { CSSProperties } from 'react';
 
+import './term.css';
+
 export type Theme = {
   background: Property.Color;
   foreground: Property.Color;
+  selection: Property.Color;
+  selectedText: Property.Color;
   black: Property.Color;
   red: Property.Color;
   green: Property.Color;
@@ -28,6 +32,8 @@ export type Theme = {
 export const DefaultTheme: Theme = {
   background: '#586069',
   foreground: '#d1d5da',
+  selection: '#959da5',
+  selectedText: '#d1d5da',
   black: '#586069',
   red: '#ea4a5a',
   green: '#34d058',
@@ -428,14 +434,22 @@ export default function Term({
   return (
     <pre
       className={className}
-      style={{
-        ...style,
-        color: theme.foreground,
-        backgroundColor: theme.background,
-      }}
+      style={
+        {
+          ...style,
+          color: theme.foreground,
+          backgroundColor: theme.background,
+          '--term-selection': theme.selection,
+          '--term-selected-text': theme.selectedText,
+        } as CSSProperties
+      }
     >
       {spans.map((span, i) => (
-        <span key={i} style={styleFromRendering(span.rendering, theme)}>
+        <span
+          className="term-span"
+          key={i}
+          style={styleFromRendering(span.rendering, theme)}
+        >
           {span.text}
         </span>
       ))}
