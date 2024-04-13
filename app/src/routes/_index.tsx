@@ -20,14 +20,7 @@ export const meta: MetaFunction = () => {
     { name: 'description', content: 'Generate a terminal theme from an image' },
   ];
 };
-
-type ActionData = {
-  theme: APITheme;
-};
-
-export async function action({
-  request,
-}: ActionFunctionArgs): Promise<ActionData> {
+export async function action({ request }: ActionFunctionArgs) {
   console.log(`${request.method} ${request.url}`);
   const uploadHandler = unstable_composeUploadHandlers(
     unstable_createFileUploadHandler({
@@ -55,7 +48,7 @@ export async function action({
   if (!res.ok) {
     throw json((await res.text()) || res.statusText, { status: res.status });
   }
-  return { theme: await res.json() };
+  return { themes: await res.json() };
 }
 
 export default function Index() {
@@ -72,7 +65,7 @@ export default function Index() {
       <Form method="POST" encType="multipart/form-data" onChange={onChange}>
         <ImageDrop name="image" />
       </Form>
-      {actionData ? <Theme theme={actionData.theme} /> : null}
+      {actionData ? <Theme themes={actionData.themes} /> : null}
     </div>
   );
 }

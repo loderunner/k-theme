@@ -45,7 +45,7 @@ function apiToTerm(theme: APITheme, scheme: ColorScheme): Theme {
 }
 
 type Props = {
-  theme: APITheme;
+  themes: Record<ColorScheme, APITheme>;
 };
 
 function LightIcon({ className }: { className?: string }) {
@@ -86,7 +86,7 @@ function DarkIcon({ className }: { className?: string }) {
   );
 }
 
-export default function Theme({ theme }: Props) {
+export default function Theme({ themes }: Props) {
   const [scheme, setScheme] = useState<ColorScheme>('light');
   const Icon = useMemo(
     () => (scheme === 'light' ? LightIcon : DarkIcon),
@@ -96,11 +96,14 @@ export default function Theme({ theme }: Props) {
     () => setScheme(scheme === 'light' ? 'dark' : 'light'),
     [scheme],
   );
-  const termTheme = useMemo(() => apiToTerm(theme, scheme), [scheme, theme]);
+  const termTheme = useMemo(
+    () => apiToTerm(themes[scheme], scheme),
+    [scheme, themes],
+  );
 
   return (
     <>
-      <Palette theme={theme} />
+      <Palette theme={themes[scheme]} />
       <div
         className="m-8 overflow-clip rounded-xl shadow-2xl shadow-gray-800"
         style={{ backgroundColor: termTheme.background }}
