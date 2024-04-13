@@ -5,6 +5,7 @@ import terminalOutput from '~/assets/terminal-output';
 import Palette from '~/components/Palette';
 import Term from '~/components/Term';
 
+import type { Property } from 'csstype';
 import type { CSSProperties, MouseEventHandler } from 'react';
 import type { Theme } from '~/components/Term';
 
@@ -13,22 +14,22 @@ import './theme.css';
 export type ColorScheme = 'light' | 'dark';
 
 export type APITheme = {
-  black: string;
-  red: string;
-  green: string;
-  yellow: string;
-  blue: string;
-  magenta: string;
-  cyan: string;
-  white: string;
-  brightBlack: string;
-  brightRed: string;
-  brightGreen: string;
-  brightYellow: string;
-  brightBlue: string;
-  brightMagenta: string;
-  brightCyan: string;
-  brightWhite: string;
+  black: Property.Color;
+  red: Property.Color;
+  green: Property.Color;
+  yellow: Property.Color;
+  blue: Property.Color;
+  magenta: Property.Color;
+  cyan: Property.Color;
+  white: Property.Color;
+  brightBlack: Property.Color;
+  brightRed: Property.Color;
+  brightGreen: Property.Color;
+  brightYellow: Property.Color;
+  brightBlue: Property.Color;
+  brightMagenta: Property.Color;
+  brightCyan: Property.Color;
+  brightWhite: Property.Color;
 };
 
 function apiToTerm(theme: APITheme, scheme: ColorScheme): Theme {
@@ -103,7 +104,7 @@ export default function Theme({ themes }: Props) {
 
   return (
     <>
-      <Palette theme={themes[scheme]} />
+      <Palette theme={themes[scheme]} scheme={scheme} />
       <div
         className="m-8 overflow-clip rounded-xl shadow-2xl shadow-gray-800"
         style={{ backgroundColor: termTheme.background }}

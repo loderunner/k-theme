@@ -1,13 +1,13 @@
 @property --theme-scheme-button-color {
   syntax: '<color>';
   inherits: true;
-  initial-value: auto;
+  initial-value: currentcolor;
 }
 
 @property --theme-scheme-button-hover-color {
   syntax: '<color>';
   inherits: true;
-  initial-value: auto;
+  initial-value: currentcolor;
 }
 
 button.scheme-button {

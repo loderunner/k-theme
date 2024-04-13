@@ -1,13 +1,13 @@
 @property --term-selected-text {
   syntax: '<color>';
   inherits: true;
-  initial-value: auto;
+  initial-value: currentcolor;
 }
 
 @property --term-selection {
   syntax: '<color>';
   inherits: true;
-  initial-value: auto;
+  initial-value: currentcolor;
 }
 
 span.term-span::selection {
