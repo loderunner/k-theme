@@ -154,7 +154,7 @@ export default function Theme({ themes }: Props) {
           </button>
         </div>
         <Term
-          className="mx-2 aspect-[4/3] overflow-scroll pb-2 text-xs"
+          className="text-xxs mx-2 aspect-[4/3] overflow-scroll pb-2 md:text-xs"
           content={terminalOutput}
           theme={termTheme}
         />
