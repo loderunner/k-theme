@@ -1,9 +1,11 @@
 import { useFloating } from '@floating-ui/react-dom';
 import { Popover } from '@headlessui/react';
 import clsx from 'clsx';
+import { useCallback, useState } from 'react';
 
 import type { APITheme, ColorScheme } from './Theme';
 import type { Property } from 'csstype';
+import type { MouseEventHandler } from 'react';
 
 type Props = {
   theme: APITheme;
@@ -62,56 +64,74 @@ function Swatch({
   brightForegroundColor: Property.Color;
   i: number;
 }) {
+  const [mouseOver, setMouseOver] = useState(false);
+  const onMouseOver = useCallback<MouseEventHandler<HTMLButtonElement>>(
+    () => setMouseOver(true),
+    [],
+  );
+  const onMouseOut = useCallback<MouseEventHandler<HTMLButtonElement>>(
+    () => setMouseOver(false),
+    [],
+  );
   const { refs, floatingStyles } = useFloating();
   return (
     <Popover className="aspect-square flex-1">
-      <Popover.Button
-        ref={refs.setReference}
-        className="h-full w-full"
-        style={{ backgroundColor: color }}
-      />
-      <Popover.Panel
-        ref={refs.setFloating}
-        className="flex flex-col items-center"
-        style={floatingStyles}
-      >
-        <div
-          className="border-b-8 border-l-8 border-r-8 border-l-transparent border-r-transparent"
-          style={{ borderBottomColor: backgroundColor }}
-        />
-        <div
-          className={clsx(
-            'flex',
-            'w-fit',
-            'flex-col',
-            'items-center',
-            'rounded-lg',
-            'py-6',
-            'px-9',
-            'shadow-2xl',
+      {({ open }) => (
+        <>
+          <Popover.Button
+            ref={refs.setReference}
+            className="h-full w-full"
+            style={{ backgroundColor: color }}
+            onMouseOver={onMouseOver}
+            onMouseOut={onMouseOut}
+          />
+          {(open || mouseOver) && (
+            <Popover.Panel
+              static
+              ref={refs.setFloating}
+              className="flex flex-col items-center"
+              style={floatingStyles}
+            >
+              <div
+                className="border-b-8 border-l-8 border-r-8 border-l-transparent border-r-transparent"
+                style={{ borderBottomColor: backgroundColor }}
+              />
+              <div
+                className={clsx(
+                  'flex',
+                  'w-fit',
+                  'flex-col',
+                  'items-center',
+                  'rounded-lg',
+                  'py-6',
+                  'px-9',
+                  'shadow-2xl',
+                )}
+                style={{ backgroundColor }}
+              >
+                <div
+                  className="mb-1 text-center text-sm"
+                  style={{ color: foregroundColor }}
+                >
+                  Ansi Color {i}
+                </div>
+                <div
+                  className="mb-2 text-center font-bold"
+                  style={{ color: brightForegroundColor }}
+                >
+                  {colorNames[i]}
+                </div>
+                <div
+                  className="text-center font-mono text-sm"
+                  style={{ color: foregroundColor }}
+                >
+                  {color}
+                </div>
+              </div>
+            </Popover.Panel>
           )}
-          style={{ backgroundColor }}
-        >
-          <div
-            className="mb-1 text-center text-sm"
-            style={{ color: foregroundColor }}
-          >
-            Ansi Color {i}
-          </div>
-          <div
-            className="mb-2 text-center font-bold"
-            style={{ color: brightForegroundColor }}
-          >
-            {colorNames[i]}
-          </div>
-          <div
-            className="text-center font-mono text-sm"
-            style={{ color: foregroundColor }}
-          >
-            {color}
-          </div>
-        </div>
-      </Popover.Panel>
+        </>
+      )}
     </Popover>
   );
 }
