@@ -65,7 +65,7 @@ export default function Index() {
       <Form method="POST" encType="multipart/form-data" onChange={onChange}>
         <ImageDrop name="image" />
       </Form>
-      {actionData ? <Theme themes={actionData.themes} /> : null}
+      {actionData ? <Theme themes={actionData.themes.hsl} /> : null}
     </div>
   );
 }

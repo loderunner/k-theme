@@ -1,17 +1,14 @@
 import logging
 import os
 from http import HTTPStatus
-from io import BytesIO
-from typing import Annotated
+from typing import TypedDict
 from uuid import uuid4
 
-import requests
 import theme.hsl as hsl
-from fastapi import FastAPI, File, HTTPException, Request, Response, UploadFile
+from fastapi import FastAPI, HTTPException, Request, Response, UploadFile
 from fastapi.concurrency import asynccontextmanager
 from fastapi.exception_handlers import http_exception_handler
-from pydantic import StringConstraints
-from theme import euclidean, generate_theme, read_image
+from theme import ConvertFunc, DistFunc, euclidean, generate_theme, read_image
 
 from .logger import Logger, configure_logger, get_logger, get_req_logger
 from .settings import load_settings
@@ -61,6 +58,19 @@ async def exception_handler(req: Request, err: Exception):
     return res
 
 
+class ColorSpaceOperator(TypedDict):
+    to_space: ConvertFunc
+    from_space: ConvertFunc
+    dist_func: DistFunc
+
+
+ops: dict[str, ColorSpaceOperator] = {
+    "hsl": ColorSpaceOperator(
+        to_space=hsl.rgb_to_xyz, from_space=hsl.xyz_to_rgb, dist_func=euclidean
+    )
+}
+
+
 @app.post("/theme")
 async def get_theme(
     file: UploadFile,
@@ -71,30 +81,19 @@ async def get_theme(
     )
     img = read_image(file.file)
 
-    logger.info("generating light theme")
-    light_theme = generate_theme(
-        img,
-        "light",
-        to_space=hsl.rgb_to_xyz,
-        from_space=hsl.xyz_to_rgb,
-        dist_func=euclidean,
-    )
-    logger.info("light theme generated")
+    themes = {}
+    for space, op in ops.items():
+        schemes = {}
+        for scheme in ["light", "dark"]:
+            logger.info(f"generating {space} {scheme} theme")
+            theme = generate_theme(img, "light", **op)
+            logger.info(f"{space} {scheme} theme generated")
 
-    logger.info("generating dark theme")
-    dark_theme = generate_theme(
-        img,
-        "dark",
-        to_space=hsl.rgb_to_xyz,
-        from_space=hsl.xyz_to_rgb,
-        dist_func=euclidean,
-    )
-    logger.info("dark theme generated")
+            schemes[scheme] = theme_to_css(theme)
 
-    return {
-        "light": theme_to_css(light_theme),
-        "dark": theme_to_css(dark_theme),
-    }
+        themes[space] = schemes
+
+    return themes
 
 
 def rgb_to_css(color):
