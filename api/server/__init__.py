@@ -4,6 +4,8 @@ from http import HTTPStatus
 from typing import TypedDict
 from uuid import uuid4
 
+import numpy as np
+import skimage as ski
 import theme.hsl as hsl
 from fastapi import FastAPI, HTTPException, Request, Response, UploadFile
 from fastapi.concurrency import asynccontextmanager
@@ -65,9 +67,22 @@ class ColorSpaceOperator(TypedDict):
 
 
 ops: dict[str, ColorSpaceOperator] = {
-    "hsl": ColorSpaceOperator(
+    "HSL": ColorSpaceOperator(
         to_space=hsl.rgb_to_xyz, from_space=hsl.xyz_to_rgb, dist_func=euclidean
-    )
+    ),
+    "RGB": ColorSpaceOperator(
+        to_space=np.copy, from_space=np.copy, dist_func=euclidean
+    ),
+    "CIE Lab": ColorSpaceOperator(
+        to_space=ski.color.rgb2lab,
+        from_space=ski.color.lab2rgb,
+        dist_func=euclidean,
+    ),
+    "YUV": ColorSpaceOperator(
+        to_space=ski.color.rgb2yuv,
+        from_space=ski.color.yuv2rgb,
+        dist_func=euclidean,
+    ),
 }
 
 
@@ -86,7 +101,7 @@ async def get_theme(
         schemes = {}
         for scheme in ["light", "dark"]:
             logger.info(f"generating {space} {scheme} theme")
-            theme = generate_theme(img, "light", **op)
+            theme = generate_theme(img, scheme, **op)
             logger.info(f"{space} {scheme} theme generated")
 
             schemes[scheme] = theme_to_css(theme)

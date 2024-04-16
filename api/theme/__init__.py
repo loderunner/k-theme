@@ -100,7 +100,7 @@ def compute_means(centroids: ImageArray, assigned: AssignArray, px: ImageArray):
 
 def generate_theme(
     img: ImageArray,
-    scheme: Literal["light"] | Literal["dark"],
+    scheme: str,
     to_space: ConvertFunc,
     from_space: ConvertFunc,
     dist_func: DistFunc,

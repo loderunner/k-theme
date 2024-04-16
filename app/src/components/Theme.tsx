@@ -52,7 +52,7 @@ type Props = {
 };
 
 export default function Theme({ themes }: Props) {
-  const [space, setSpace] = useState<string>('hsl');
+  const [space, setSpace] = useState<string>(Object.keys(themes)[0]);
 
   const [scheme, setScheme] = useState<ColorScheme>('light');
   const SchemeIcon = useMemo(
