@@ -1,3 +1,5 @@
+import { Menu } from '@headlessui/react';
+import { ChevronDownIcon, MoonIcon, SunIcon } from '@heroicons/react/16/solid';
 import clsx from 'clsx';
 import { useCallback, useMemo, useState } from 'react';
 
@@ -46,71 +48,57 @@ function apiToTerm(theme: APITheme, scheme: ColorScheme): Theme {
 }
 
 type Props = {
-  themes: Record<ColorScheme, APITheme>;
+  themes: Record<string, Record<ColorScheme, APITheme>>;
 };
 
-function LightIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      strokeWidth="1.5"
-      stroke="currentColor"
-      className={className ?? ''}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z"
-      />
-    </svg>
-  );
-}
-
-function DarkIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      strokeWidth="1.5"
-      stroke="currentColor"
-      className={className ?? ''}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z"
-      />
-    </svg>
-  );
-}
-
 export default function Theme({ themes }: Props) {
+  const [space, setSpace] = useState<string>('hsl');
+
   const [scheme, setScheme] = useState<ColorScheme>('light');
-  const Icon = useMemo(
-    () => (scheme === 'light' ? LightIcon : DarkIcon),
+  const SchemeIcon = useMemo(
+    () => (scheme === 'light' ? SunIcon : MoonIcon),
     [scheme],
   );
   const onClickSchemeButton = useCallback<MouseEventHandler<HTMLButtonElement>>(
     () => setScheme(scheme === 'light' ? 'dark' : 'light'),
     [scheme],
   );
+
   const termTheme = useMemo(
-    () => apiToTerm(themes[scheme], scheme),
-    [scheme, themes],
+    () => apiToTerm(themes[space][scheme], scheme),
+    [scheme, themes, space],
+  );
+
+  const menuItems = useMemo(
+    () =>
+      Object.keys(themes).map((s) => (
+        <Menu.Item
+          key={s}
+          as="button"
+          className="scheme-button px-2 py-1 text-xs"
+          style={
+            {
+              '--theme-scheme-button-color': termTheme.white,
+              '--theme-scheme-button-hover-color': termTheme.background,
+            } as CSSProperties
+          }
+          onClick={() => setSpace(s)}
+        >
+          {s}
+        </Menu.Item>
+      )),
+    [termTheme.background, termTheme.white, themes],
   );
 
   return (
     <>
-      <Palette theme={themes[scheme]} scheme={scheme} />
+      <Palette theme={themes[space][scheme]} scheme={scheme} />
       <div
         className="m-8 overflow-clip rounded-xl shadow-2xl shadow-gray-800"
         style={{ backgroundColor: termTheme.background }}
       >
         <div className="flex items-center justify-between px-3 py-2">
-          <div className="flex">
+          <div className="flex items-center">
             <div
               className={clsx(
                 'mr-2',
@@ -139,22 +127,48 @@ export default function Theme({ themes }: Props) {
               )}
             />
           </div>
-          <button
-            className="scheme-button h-6 w-6 rounded-full p-1"
-            style={
-              {
-                borderColor: termTheme.foreground,
-                '--theme-scheme-button-color': termTheme.foreground,
-                '--theme-scheme-button-hover-color': termTheme.background,
-              } as CSSProperties
-            }
-            onClick={onClickSchemeButton}
-          >
-            <Icon />
-          </button>
+          <div className="flex items-center">
+            <Menu as="div" className="relative mr-2 inline-block">
+              <Menu.Button
+                className="scheme-button inline-flex h-6 min-w-16 items-stretch justify-end rounded-md px-2 py-1 text-xs ring-1"
+                style={
+                  {
+                    '--tw-ring-color': termTheme.white,
+                    '--theme-scheme-button-color': termTheme.white,
+                    '--theme-scheme-button-hover-color': termTheme.background,
+                  } as CSSProperties
+                }
+              >
+                <span className="px-1">{space}</span>
+                <ChevronDownIcon />
+              </Menu.Button>
+              <Menu.Items
+                className="absolute right-0 mt-2 flex w-full origin-top-right flex-col overflow-clip rounded-md ring-1"
+                style={
+                  {
+                    '--tw-ring-color': termTheme.white,
+                  } as CSSProperties
+                }
+              >
+                {menuItems}
+              </Menu.Items>
+            </Menu>
+            <button
+              className="scheme-button h-6 w-6 rounded-full p-1"
+              style={
+                {
+                  '--theme-scheme-button-color': termTheme.white,
+                  '--theme-scheme-button-hover-color': termTheme.background,
+                } as CSSProperties
+              }
+              onClick={onClickSchemeButton}
+            >
+              <SchemeIcon />
+            </button>
+          </div>
         </div>
         <Term
-          className="text-xxs mx-2 aspect-[4/3] overflow-scroll pb-2 md:text-xs"
+          className="mx-2 aspect-[4/3] overflow-scroll pb-2 text-xxs md:text-xs"
           content={terminalOutput}
           theme={termTheme}
         />

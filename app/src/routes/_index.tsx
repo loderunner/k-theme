@@ -12,7 +12,6 @@ import Theme from '~/components/Theme';
 
 import type { ActionFunctionArgs, MetaFunction } from '@remix-run/node';
 import type { FormEventHandler } from 'react';
-import type { APITheme } from '~/components/Theme';
 
 export const meta: MetaFunction = () => {
   return [
@@ -65,7 +64,7 @@ export default function Index() {
       <Form method="POST" encType="multipart/form-data" onChange={onChange}>
         <ImageDrop name="image" />
       </Form>
-      {actionData ? <Theme themes={actionData.themes.hsl} /> : null}
+      {actionData ? <Theme themes={actionData.themes} /> : null}
     </div>
   );
 }
