@@ -4,7 +4,17 @@ import {
   unstable_createMemoryUploadHandler,
   unstable_parseMultipartFormData,
 } from '@remix-run/node';
-import { Form, json, useActionData, useSubmit } from '@remix-run/react';
+import {
+  Form,
+  json,
+  useActionData,
+  useFetcher,
+  useFetchers,
+  useNavigate,
+  useNavigation,
+  useSubmit,
+} from '@remix-run/react';
+import clsx from 'clsx';
 import { useCallback } from 'react';
 
 import ImageDrop from '~/components/ImageDrop';
@@ -51,20 +61,47 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function Index() {
-  const actionData = useActionData<typeof action>();
+  const fetcher = useFetcher<typeof action>();
 
-  const submit = useSubmit();
   const onChange = useCallback<FormEventHandler<HTMLFormElement>>(
-    (e) => submit(e.currentTarget),
-    [submit],
+    (e) => fetcher.submit(e.currentTarget),
+    [fetcher],
   );
 
   return (
     <div>
-      <Form method="POST" encType="multipart/form-data" onChange={onChange}>
-        <ImageDrop name="image" />
-      </Form>
-      {actionData ? <Theme themes={actionData.themes} /> : null}
+      <fetcher.Form
+        className="relative"
+        method="POST"
+        encType="multipart/form-data"
+        onChange={onChange}
+      >
+        {fetcher.state !== 'idle' && (
+          <div
+            className={clsx(
+              'absolute',
+              'z-10',
+              'flex',
+              'h-full',
+              'w-full',
+              'flex-col',
+              'items-center',
+              'justify-center',
+              'bg-black',
+              'bg-opacity-70',
+              'text-gray-200',
+            )}
+          >
+            <span className="text-5xl">Loading...</span>
+          </div>
+        )}
+        <ImageDrop
+          className="absolute z-0"
+          name="image"
+          disabled={fetcher.state !== 'idle'}
+        />
+      </fetcher.Form>
+      {fetcher.data ? <Theme themes={fetcher.data.themes} /> : null}
     </div>
   );
 }

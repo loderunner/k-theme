@@ -89,7 +89,7 @@ function Swatch({
             <Popover.Panel
               static
               ref={refs.setFloating}
-              className="z-10 flex flex-col items-center"
+              className="z-50 flex flex-col items-center"
               style={floatingStyles}
             >
               <div

@@ -25,10 +25,12 @@ function PhotoIcon({ className }: { className?: string }) {
 }
 
 type Props = {
+  className?: string;
   name: string;
+  disabled?: boolean;
 };
 
-export default function ImageDrop({ name }: Props) {
+export default function ImageDrop({ className, name, disabled }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const onClick = useCallback<MouseEventHandler<HTMLButtonElement>>(
     () => inputRef.current?.click(),
@@ -47,35 +49,61 @@ export default function ImageDrop({ name }: Props) {
   );
 
   const [dragging, setDragging] = useState(false);
-  const onDragEnter = useCallback<DragEventHandler<HTMLDivElement>>((e) => {
-    e.preventDefault();
-    setDragging(true);
-  }, []);
-  const onDragOver = useCallback<DragEventHandler<HTMLDivElement>>(
-    (e) => e.preventDefault(),
-    [],
-  );
-  const onDragEnd = useCallback<DragEventHandler<HTMLDivElement>>((e) => {
-    e.preventDefault();
-    setDragging(false);
-  }, []);
-  const onDrop = useCallback<DragEventHandler<HTMLDivElement>>((e) => {
-    e.preventDefault();
-    setDragging(false);
-
-    const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith('image/')) {
-      setImageURL(URL.createObjectURL(file));
-      if (inputRef.current) {
-        inputRef.current.files = e.dataTransfer.files;
-        inputRef.current.dispatchEvent(new Event('change', { bubbles: true }));
+  const onDragEnter = useCallback<DragEventHandler<HTMLDivElement>>(
+    (e) => {
+      e.preventDefault();
+      if (disabled) {
+        return;
       }
-    }
-  }, []);
+      setDragging(true);
+    },
+    [disabled],
+  );
+  const onDragOver = useCallback<DragEventHandler<HTMLDivElement>>(
+    (e) => {
+      e.preventDefault();
+      if (disabled) {
+        return;
+      }
+    },
+    [disabled],
+  );
+  const onDragEnd = useCallback<DragEventHandler<HTMLDivElement>>(
+    (e) => {
+      e.preventDefault();
+      if (disabled) {
+        return;
+      }
+      setDragging(false);
+    },
+    [disabled],
+  );
+  const onDrop = useCallback<DragEventHandler<HTMLDivElement>>(
+    (e) => {
+      e.preventDefault();
+      if (disabled) {
+        return;
+      }
+      setDragging(false);
+
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) {
+        setImageURL(URL.createObjectURL(file));
+        if (inputRef.current) {
+          inputRef.current.files = e.dataTransfer.files;
+          inputRef.current.dispatchEvent(
+            new Event('change', { bubbles: true }),
+          );
+        }
+      }
+    },
+    [disabled],
+  );
 
   return (
     <button
       className={clsx(
+        className,
         'relative',
         'flex',
         'aspect-video',
@@ -85,6 +113,7 @@ export default function ImageDrop({ name }: Props) {
         'justify-center',
       )}
       type="button"
+      disabled={disabled}
       onClick={onClick}
     >
       <div
