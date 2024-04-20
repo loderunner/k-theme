@@ -16,10 +16,10 @@ uvicorn = {extras = ["standard"], version = "~=0.29.0"}
 pydantic = "~=2.6"
 pydantic-settings = "~=2.2"
 structlog = "~=24.1"
-python-multipart = "*"
+python-multipart = "~=0.0.9"
 
 [requires]
-python_version = "3.11"
+python_version = "3.12"
 
 [dev-packages]
 black = "~=24.3"
