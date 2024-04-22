@@ -1,7 +1,7 @@
 import numpy as np
 import skimage as ski
 
-from . import ImageArray
+from .k_means import ImageArray
 
 
 def hsv_to_hsl(hsv: ImageArray) -> ImageArray:

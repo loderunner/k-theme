@@ -1,14 +1,11 @@
-from typing import BinaryIO, Callable, Literal
+from dataclasses import dataclass
+from typing import BinaryIO, Literal, TypedDict
 
 import numpy as np
-import numpy.typing as npt
 import skimage as ski
 
-ImageArray = npt.NDArray[np.float64]
-ConvertFunc = Callable[[ImageArray], ImageArray]
-DistArray = npt.NDArray[np.float64]
-DistFunc = Callable[[ImageArray, ImageArray], DistArray]
-AssignArray = npt.NDArray[np.int_]
+from . import hsl, k_means
+from .k_means import ConvertFunc, DistFunc, ImageArray
 
 
 def read_image(file: str | BinaryIO) -> ImageArray:
@@ -66,55 +63,55 @@ dark_centroids: ImageArray = np.array(
 )
 
 
-def euclidean(a: ImageArray, b: ImageArray) -> ImageArray:
-    """For each pixel in a, return the distance to every pixel in b"""
-    return np.apply_along_axis(lambda x: np.linalg.norm(x - b, axis=1), 1, a)
+type ColorScheme = Literal["light", "dark"]
+type ColorSpace = Literal["HSL", "RGB", "CIE Lab", "YUV"]
 
 
-def snap_centroids(
-    centroids: ImageArray, px: ImageArray, dist_func: DistFunc
-) -> ImageArray:
-    """Returns new centroids snapped to the closest pixel value (Euclidean distance)"""
-    distances = dist_func(centroids, px)
-    return px[np.argmin(distances, axis=1)]
+@dataclass
+class ColorSpaceOperator:
+    to_space: ConvertFunc
+    from_space: ConvertFunc
+    dist_func: DistFunc
 
 
-def assign_centroids(
-    centroids: ImageArray, px: ImageArray, dist_func: DistFunc
-) -> AssignArray:
-    """For each pixel in px, compute the closest centroid and return the list of assigned centroids"""
-    distances = dist_func(px, centroids)
-    assigned = np.argmin(distances, axis=1)
-    return assigned
-
-
-def compute_means(centroids: ImageArray, assigned: AssignArray, px: ImageArray):
-    """For each group assigned to a centroid, compute the mean and return the list of means"""
-    return np.array(
-        [
-            px[assigned == k].mean(axis=0) if k in assigned else centroids[k]
-            for k in range(len(centroids))
-        ]
-    )
+ops: dict[ColorSpace, ColorSpaceOperator] = {
+    "HSL": ColorSpaceOperator(
+        to_space=hsl.rgb_to_xyz,
+        from_space=hsl.xyz_to_rgb,
+        dist_func=k_means.euclidean,
+    ),
+    "RGB": ColorSpaceOperator(
+        to_space=np.copy, from_space=np.copy, dist_func=k_means.euclidean
+    ),
+    "CIE Lab": ColorSpaceOperator(
+        to_space=ski.color.rgb2lab,
+        from_space=ski.color.lab2rgb,
+        dist_func=k_means.euclidean,
+    ),
+    "YUV": ColorSpaceOperator(
+        to_space=ski.color.rgb2yuv,
+        from_space=ski.color.yuv2rgb,
+        dist_func=k_means.euclidean,
+    ),
+}
 
 
 def generate_theme(
     img: ImageArray,
-    scheme: str,
-    to_space: ConvertFunc,
-    from_space: ConvertFunc,
-    dist_func: DistFunc,
+    space: ColorSpace,
+    scheme: ColorScheme,
     max_iterations=1,
 ):
     """Generate a theme from an image"""
-    px = to_space(img)
-    theme = to_space(light_centroids if scheme == "light" else dark_centroids)
-    theme = snap_centroids(theme, px, dist_func)
+    op = ops[space]
+    px = op.to_space(img)
+    theme = op.to_space(light_centroids)
+    theme = k_means.snap_centroids(theme, px, op.dist_func)
     for i in range(max_iterations):
-        assigned = assign_centroids(theme, px, dist_func)
-        means = compute_means(theme, assigned, px)
-        snapped_means = snap_centroids(means, px, dist_func)
+        assigned = k_means.assign_centroids(theme, px, op.dist_func)
+        means = k_means.compute_means(theme, assigned, px)
+        snapped_means = k_means.snap_centroids(means, px, op.dist_func)
         if np.allclose(theme, snapped_means):
             break
         theme = snapped_means
-    return np.floor(from_space(theme) * 255).astype(int)
+    return np.floor(op.from_space(theme) * 255).astype(int)

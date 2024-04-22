@@ -1,16 +1,13 @@
 import logging
 import os
 from http import HTTPStatus
-from typing import TypedDict
+from typing import Annotated
 from uuid import uuid4
 
-import numpy as np
-import skimage as ski
-import theme.hsl as hsl
-from fastapi import FastAPI, HTTPException, Request, Response, UploadFile
+from fastapi import FastAPI, Form, HTTPException, Request, Response, UploadFile
 from fastapi.concurrency import asynccontextmanager
 from fastapi.exception_handlers import http_exception_handler
-from theme import ConvertFunc, DistFunc, euclidean, generate_theme, read_image
+from theme import ColorScheme, ColorSpace, generate_theme, read_image
 
 from .logger import Logger, configure_logger, get_logger, get_req_logger
 from .settings import load_settings
@@ -53,6 +50,7 @@ async def req_id(req: Request, next_call):
 @app.exception_handler(Exception)
 async def exception_handler(req: Request, err: Exception):
     log = get_req_logger(req)
+    log.error(repr(err), exc_info=err)
     res = await http_exception_handler(req, HTTPException(500))
     log.error(
         f"request ended: {req.method} {req.url.path} - {res.status_code} {HTTPStatus(res.status_code).phrase}"
@@ -60,35 +58,11 @@ async def exception_handler(req: Request, err: Exception):
     return res
 
 
-class ColorSpaceOperator(TypedDict):
-    to_space: ConvertFunc
-    from_space: ConvertFunc
-    dist_func: DistFunc
-
-
-ops: dict[str, ColorSpaceOperator] = {
-    "HSL": ColorSpaceOperator(
-        to_space=hsl.rgb_to_xyz, from_space=hsl.xyz_to_rgb, dist_func=euclidean
-    ),
-    "RGB": ColorSpaceOperator(
-        to_space=np.copy, from_space=np.copy, dist_func=euclidean
-    ),
-    "CIE Lab": ColorSpaceOperator(
-        to_space=ski.color.rgb2lab,
-        from_space=ski.color.lab2rgb,
-        dist_func=euclidean,
-    ),
-    "YUV": ColorSpaceOperator(
-        to_space=ski.color.rgb2yuv,
-        from_space=ski.color.yuv2rgb,
-        dist_func=euclidean,
-    ),
-}
-
-
 @app.post("/theme")
 async def get_theme(
     file: UploadFile,
+    space: Annotated[ColorSpace, Form()],
+    scheme: Annotated[ColorScheme, Form()],
     logger: Logger,
 ):
     logger.info(
@@ -96,19 +70,33 @@ async def get_theme(
     )
     img = read_image(file.file)
 
-    themes = {}
-    for space, op in ops.items():
-        schemes = {}
-        for scheme in ["light", "dark"]:
-            logger.info(f"generating {space} {scheme} theme")
-            theme = generate_theme(img, scheme, **op)
-            logger.info(f"{space} {scheme} theme generated")
+    logger.info(f"generating {space} {scheme} theme")
+    theme = generate_theme(img, space, scheme)
+    logger.info(f"{space} {scheme} theme generated")
 
-            schemes[scheme] = theme_to_css(theme)
+    theme = theme_to_css(theme)
 
-        themes[space] = schemes
+    return theme
 
-    return themes
+
+color_indexes = [
+    "black",
+    "red",
+    "green",
+    "yellow",
+    "blue",
+    "magenta",
+    "cyan",
+    "white",
+    "brightBlack",
+    "brightRed",
+    "brightGreen",
+    "brightYellow",
+    "brightBlue",
+    "brightMagenta",
+    "brightCyan",
+    "brightWhite",
+]
 
 
 def rgb_to_css(color):
@@ -116,21 +104,4 @@ def rgb_to_css(color):
 
 
 def theme_to_css(theme):
-    return {
-        "black": rgb_to_css(theme[0]),
-        "red": rgb_to_css(theme[1]),
-        "green": rgb_to_css(theme[2]),
-        "yellow": rgb_to_css(theme[3]),
-        "blue": rgb_to_css(theme[4]),
-        "magenta": rgb_to_css(theme[5]),
-        "cyan": rgb_to_css(theme[6]),
-        "white": rgb_to_css(theme[7]),
-        "brightBlack": rgb_to_css(theme[8]),
-        "brightRed": rgb_to_css(theme[9]),
-        "brightGreen": rgb_to_css(theme[10]),
-        "brightYellow": rgb_to_css(theme[11]),
-        "brightBlue": rgb_to_css(theme[12]),
-        "brightMagenta": rgb_to_css(theme[13]),
-        "brightCyan": rgb_to_css(theme[14]),
-        "brightWhite": rgb_to_css(theme[15]),
-    }
+    return {name: rgb_to_css(theme[i]) for i, name in enumerate(color_indexes)}
